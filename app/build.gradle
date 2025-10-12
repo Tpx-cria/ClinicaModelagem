@@ -19,7 +19,7 @@ dependencies {
 }
 
 application {
-    mainClass = 'br.edu.grupo.clinica.App'
+    mainClass = 'br.edu.grupo.clinica.Main'
 }
 
 tasks.withType(JavaCompile).configureEach {

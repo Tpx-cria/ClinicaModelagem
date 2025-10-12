@@ -3,3 +3,10 @@
 
 # Ignore Gradle build output directory
 build
+
+Clinica_debug.html
+Clinica_error.html
+Clinica_report.html
+Clinica_trace.html
+
+gradle.properties
