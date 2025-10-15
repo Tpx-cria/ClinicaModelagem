@@ -32,7 +32,7 @@ public class Paciente extends SimProcess {
         else         m.filasComum[idx].insert(this);
 
         // Se o consultório correspondente estiver dormindo, acorde-o
-        if (m.consultorios[idx].isScheduled()) {
+        if (!m.consultorios[idx].isScheduled()) {
             m.consultorios[idx].activate();
         }
 

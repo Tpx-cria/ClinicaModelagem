@@ -10,9 +10,9 @@ public class Main {
 
         model.connectToExperiment(exp); // conecta o modelo ao experimento o DESMO-J chama: model.init() cria distribuições, filas, tallies, model.doInitialSchedules()  agenda processos iniciais o GeradorChegadas, sem essa linha o experimento não vê o modelo
 
-        exp.stop(new desmoj.core.simulator.TimeInstant(600*30)); // tempo total de simulação: 10 horas (600 minutos)
-        exp.tracePeriod(new desmoj.core.simulator.TimeInstant(0), new desmoj.core.simulator.TimeInstant(600*30)); //liga o Trace do inicio 0 até 600 fim.
-        exp.debugPeriod(new desmoj.core.simulator.TimeInstant(0), new desmoj.core.simulator.TimeInstant(60*30)); // mesma coisa só q debug 
+        exp.stop(new desmoj.core.simulator.TimeInstant(600)); // tempo total de simulação: 10 horas (600 minutos)
+        exp.tracePeriod(new desmoj.core.simulator.TimeInstant(0), new desmoj.core.simulator.TimeInstant(600)); //liga o Trace do inicio 0 até 600 fim.
+        exp.debugPeriod(new desmoj.core.simulator.TimeInstant(0), new desmoj.core.simulator.TimeInstant(60)); // mesma coisa só q debug 
 
         exp.start(); // inicia a simulação
         exp.report(); // gera os relatórios HTML

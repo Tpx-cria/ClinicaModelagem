@@ -35,7 +35,9 @@ public class Consultorio extends SimProcess {
 
             // Reativa o paciente para que ele calcule o tempo de espera
             // (ele NÃO fará o hold do atendimento; o consultório fará)
-            if (prox.isScheduled()) prox.activate();
+            if (!prox.isScheduled()) {
+                prox.activate();
+            }
 
             // Duração do atendimento é decidida pelo tipo do paciente
             double dur = prox.isUrgente()
