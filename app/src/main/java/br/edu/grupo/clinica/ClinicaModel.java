@@ -6,12 +6,13 @@ import desmoj.core.statistic.Tally;
 
 public class ClinicaModel extends Model {
 
-    public int consultoriosAbertos = 4;
+    public int consultoriosAbertos = 1;
 
     public ContDistExponential distChegada;
     public ContDistNormal distAtendimentoNaoUrgente;
     public ContDistNormal distAtendimentoUrgente;
     public ContDistUniform u01;
+    public long seedBase;
 
     // Duas filas por consultório: urgente e comum (prioridade simples)
     public ProcessQueue<Paciente>[] filasUrg;
@@ -50,6 +51,14 @@ public class ClinicaModel extends Model {
         distAtendimentoNaoUrgente = new ContDistNormal(this, "AtendimentoNaoUrgente", 20.0, 5.0, true, true);
         distAtendimentoUrgente    = new ContDistNormal(this, "AtendimentoUrgente",    10.0, 3.0, true, true);
         u01 = new ContDistUniform(this, "U[0,1]", 0.0, 1.0, true, true);
+
+            // === Sementes explícitas (baseadas no índice de réplica) ===
+            long base = seedBase; // passe isso via construtor do modelo
+            distChegada.setSeed(base + 11);
+            distAtendimentoNaoUrgente.setSeed(base + 22);
+            distAtendimentoUrgente.setSeed(base + 33);
+            u01.setSeed(base + 44);
+
 
         // Filas por consultório e por prioridade
         filasUrg   = new ProcessQueue[consultoriosAbertos];
