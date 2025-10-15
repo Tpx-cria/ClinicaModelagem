@@ -29,7 +29,7 @@ public class ClinicaModel extends Model {
         new GeradorChegadas(this, "GeradorChegadas", true).activate(); // inicia o gerador de chegadas
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // suprime aviso de conversão genérica ao criar arrays de ProcessQueue
     @Override
     public void init() {
         // Distribuições (unidades: minutos)
