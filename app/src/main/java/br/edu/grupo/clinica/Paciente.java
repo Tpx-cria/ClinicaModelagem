@@ -1,38 +1,48 @@
 package br.edu.grupo.clinica;
 
+import desmoj.core.simulator.*;
+import co.paralleluniverse.fibers.SuspendExecution;
 
-import desmoj.core.simulator.*; // classes (Model, ProcessQueue, tipo o arena)
-import co.paralleluniverse.fibers.SuspendExecution; // necessário para usar SimProcess por exemplo hold e passivate
+public class Paciente extends SimProcess {
+    private final boolean urgente;
+    private TimeInstant inicioEspera;
 
-
-public class Paciente extends SimProcess { // paciente é um processo que se ativo executa o script do lifeCycle que o mesmo é executado ao longo do tempo de simulação
-    private final boolean urgente; // se é urgente ou não
-
-    public Paciente(ClinicaModel owner, String name, boolean showInTrace, boolean urgente) { // construtor
-        super(owner, name, showInTrace); // chama o construtor da superclasse SimProcess
-        this.urgente = urgente; // define se é urgente ou não
+    public Paciente(ClinicaModel owner, String name, boolean showInTrace, boolean urgente) {
+        super(owner, name, showInTrace);
+        this.urgente = urgente;
     }
 
+    public boolean isUrgente() { return urgente; }
+
     @Override
-    public void lifeCycle() throws SuspendExecution  { // o que o paciente faz ao longo do tempo de simulação
-        ClinicaModel m = (ClinicaModel) getModel(); // pega o clinicaModel para usar as distribuições e variáveis do modelo
+    public void lifeCycle() throws SuspendExecution {
+        ClinicaModel m = (ClinicaModel) getModel();
 
-        int idx = 0; // Escolhe a fila mais curta como ta descrito no projeto
-        for (int i = 1; i < m.filas.length; i++) { //retorna o numero de processos esperando na fila   
-            if (m.filas[i].length() < m.filas[idx].length()) idx = i; // se a fila i for menor que a fila idx atualiza idx para i
+        // Escolhe a fila COM MENOR COMPRIMENTO (soma urgente+comum)
+        int idx = 0;
+        int len0 = m.filasUrg[0].length() + m.filasComum[0].length();
+        for (int i = 1; i < m.filasUrg.length; i++) {
+            int len = m.filasUrg[i].length() + m.filasComum[i].length();
+            if (len < len0) { len0 = len; idx = i; }
         }
-        // isso aqui tem que explicar melhor, supunhetamos 4 filas com comprimentos [3, 5, 2, 4] o loop escolhe idx = 2 (a de tamanho 2) assim tende a balancear as filas e reduzir a espera
 
-        TimeInstant inicioEspera = presentTime(); // marca o tempo de início da espera
-        m.filas[idx].insert(this); // entra na fila escolhida
-        passivate(); // aguarda ser atendido se suspende e não roda mais até alguém reativá-lo com activate() ou reactivate()
-        //como não tem ninguem puxando ele fica parado para semprepor isso que o report.html vai mostrar insufficient data em TempoEspera e avg.Wait = 0
+        // Entra na fila adequada e registra início de espera
+        inicioEspera = presentTime();
+        if (urgente) m.filasUrg[idx].insert(this);
+        else         m.filasComum[idx].insert(this);
 
-        double espera = presentTime().getTimeAsDouble() - inicioEspera.getTimeAsDouble(); // calcula o tempo de espera quando for reativado a A espera é tempo_atual - tempo_de_entrada_na_fila
-        m.tempoEspera.update(espera); // atualiza a estatística do tempo de espera no relatorio
+        // Se o consultório correspondente estiver dormindo, acorde-o
+        if (m.consultorios[idx].isScheduled()) {
+            m.consultorios[idx].activate();
+        }
 
-        // duração de atendimento
-        double dur = urgente ? m.distAtendimentoUrgente.sample() : m.distAtendimentoNaoUrgente.sample(); // se for urgente usa a distribuição de urgentes senão a de não urgentes aqui ta só segurando o paciente por um tempo para simular ele sendo atendido
-        hold(new TimeSpan(dur)); // espera o tempo de atendimento
+        // Aguarda ser chamado pelo consultório
+        passivate();
+
+        // Quando for reativado pelo consultório, mede a espera
+        double espera = presentTime().getTimeAsDouble() - inicioEspera.getTimeAsDouble();
+        m.tempoEspera.update(espera);
+
+        // Paciente “termina” aqui. O tempo de serviço foi simulado no consultório.
     }
 }
