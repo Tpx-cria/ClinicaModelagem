@@ -17,35 +17,50 @@ public class Consultorio extends SimProcess {
     @Override
     public void lifeCycle() throws SuspendExecution {
         while (true) {
-            // Se não há ninguém na fila, este consultório hiberna
-            if (m.filasUrg[idx].isEmpty() && m.filasComum[idx].isEmpty()) {
-                passivate();
-                continue;
-            }
+            Paciente prox = null;
 
-            // Política de prioridade: atende urgente primeiro, senão comum
-            Paciente prox;
-            if (!m.filasUrg[idx].isEmpty()) {
-                prox = m.filasUrg[idx].first();
-                m.filasUrg[idx].remove(prox);
+            if (m.filaUnica) {
+                if (m.filaUnicaQueue.isEmpty()) {
+                    passivate();
+                    continue;
+                }
+                prox = m.filaUnicaQueue.first();
+                m.filaUnicaQueue.remove(prox);
+                m.filaMudouUnica();
             } else {
-                prox = m.filasComum[idx].first();
-                m.filasComum[idx].remove(prox);
+                if (m.filasPorConsultorio[idx].isEmpty()) {
+                    passivate();
+                    continue;
+                }
+                prox = m.filasPorConsultorio[idx].first();
+                m.filasPorConsultorio[idx].remove(prox);
             }
 
             // Reativa o paciente para que ele calcule o tempo de espera
-            // (ele NÃO fará o hold do atendimento; o consultório fará)
+            // (ele não fará o hold do atendimento; o consultório fará)
             if (!prox.isScheduled()) {
                 prox.activate();
             }
 
-            // Duração do atendimento é decidida pelo tipo do paciente
-            double dur = prox.isUrgente()
-                    ? m.distAtendimentoUrgente.sample()
-                    : m.distAtendimentoNaoUrgente.sample();
+            double dur;
+            if (prox.isUrgente()) {
+                dur = m.distAtendimentoUrgente.sample();
+            } else {
+                dur = m.distAtendimentoNaoUrgente.sample();
+            }
 
-            // Simula o atendimento neste consultório
+            m.servidorOcupado[idx] = true;
             hold(new TimeSpan(dur));
+            m.servidorOcupado[idx] = false;
+            m.tempoServico.update(dur);
+            if (prox.isUrgente()) m.tempoServicoUrgente.update(dur); else m.tempoServicoNaoUrgente.update(dur);
+            m.tempoServicoPorConsultorio[idx].update(dur);
+            double tempoSistema = presentTime().getTimeAsDouble() - prox.getChegadaTime();
+            m.tempoSistema.update(tempoSistema);
+            if (prox.isUrgente()) m.tempoSistemaUrgente.update(tempoSistema); else m.tempoSistemaNaoUrgente.update(tempoSistema);
+            if (prox.isUrgente()) m.pacientesAtendidosUrgente.update(); else m.pacientesAtendidosNaoUrgente.update();
+            m.pacientesAtendidos.update();
+            m.atendidosPorConsultorio[idx].update();
             // loop continua buscando o próximo
         }
     }
