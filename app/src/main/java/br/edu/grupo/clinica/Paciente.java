@@ -20,6 +20,14 @@ public class Paciente extends SimProcess {
         ClinicaModel m = (ClinicaModel) getModel();
 
         tChegada = presentTime();
+        
+        if (m.triagem) {
+            m.filaTriagem.insert(this);
+            if (!m.enfermeiro.isScheduled()) {
+                m.enfermeiro.activate();
+            }
+            passivate();
+        }
 
         // Entra na fila adequada e registra início de espera
         inicioEspera = presentTime();

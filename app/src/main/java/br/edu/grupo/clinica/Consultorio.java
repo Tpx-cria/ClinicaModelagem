@@ -24,7 +24,20 @@ public class Consultorio extends SimProcess {
                     passivate();
                     continue;
                 }
-                prox = m.filaUnicaQueue.first();
+                
+                if (m.prioridadeUrgente) {
+                    Paciente urgentePaciente = null;
+                    for (Paciente p : m.filaUnicaQueue) {
+                        if (p.isUrgente()) {
+                            urgentePaciente = p;
+                            break;
+                        }
+                    }
+                    prox = (urgentePaciente != null) ? urgentePaciente : m.filaUnicaQueue.first();
+                } else {
+                    prox = m.filaUnicaQueue.first();
+                }
+                
                 m.filaUnicaQueue.remove(prox);
                 m.filaMudouUnica();
             } else {
@@ -32,7 +45,20 @@ public class Consultorio extends SimProcess {
                     passivate();
                     continue;
                 }
-                prox = m.filasPorConsultorio[idx].first();
+                
+                if (m.prioridadeUrgente) {
+                    Paciente urgentePaciente = null;
+                    for (Paciente p : m.filasPorConsultorio[idx]) {
+                        if (p.isUrgente()) {
+                            urgentePaciente = p;
+                            break;
+                        }
+                    }
+                    prox = (urgentePaciente != null) ? urgentePaciente : m.filasPorConsultorio[idx].first();
+                } else {
+                    prox = m.filasPorConsultorio[idx].first();
+                }
+                
                 m.filasPorConsultorio[idx].remove(prox);
             }
 

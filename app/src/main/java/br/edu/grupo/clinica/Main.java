@@ -90,7 +90,9 @@ public class Main {
             model.muUrgente = getDouble(cfg, "servico.urg.media", 10.0);
             model.sdUrgente = getDouble(cfg, "servico.urg.desvio", 3.0);
 
-            model.filaUnica = getBool(cfg, "cenario.filaUnica", true);
+            model.filaUnica = getBool(cfg, "cenario.filaUnica", false);
+            model.prioridadeUrgente = getBool(cfg, "cenario.prioridadeUrgente", false);
+            model.triagem = getBool(cfg, "cenario.triagem", false);
 
             Experiment exp = new Experiment("Clinica_rep" + r);
             model.connectToExperiment(exp);

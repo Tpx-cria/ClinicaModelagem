@@ -4,6 +4,7 @@ import desmoj.core.dist.*;
 import desmoj.core.simulator.*;
 import desmoj.core.statistic.Tally;
 import desmoj.core.statistic.Count;
+import co.paralleluniverse.fibers.SuspendExecution;
 
 public class ClinicaModel extends Model {
 
@@ -27,9 +28,13 @@ public class ClinicaModel extends Model {
     public long seedBase;
 
 
-    public boolean filaUnica = true;
+    public boolean filaUnica = false;
+    public boolean prioridadeUrgente = false;
+    public boolean triagem = false;
     public ProcessQueue<Paciente> filaUnicaQueue;
     public ProcessQueue<Paciente>[] filasPorConsultorio;
+    public ProcessQueue<Paciente> filaTriagem;
+    public Triagem enfermeiro;
 
     public Tally tempoEspera;
     public Tally tempoServico;
@@ -58,27 +63,33 @@ public class ClinicaModel extends Model {
 
     @Override
     public String description() {
-        return "Simulação de atendimentos ambulatoriais com fila única FCFS e dois perfis de pacientes (urgente/não urgente).";
+        return "Simulacao de atendimentos ambulatoriais com fila única e dois perfis de pacientes (urgente/nao urgente).";
     }
 
     @Override
     public void doInitialSchedules() {
+        // Escalonar triagem se ativada
+        if (triagem) {
+            enfermeiro = new Triagem(this, "Triagem", true);
+            enfermeiro.activate();
+        }
+        
         // Escalonar os consultórios (servidores)
         for (int i = 0; i < consultoriosAbertos; i++) {
-            consultorios[i] = new Consultorio(this, "Consultorio-" + i, true, i);
+            consultorios[i] = new Consultorio(this, "Consultorio " + i, true, i);
             consultorios[i].activate();
         }
         // Escalonar gerador de chegadas
-        new GeradorChegadas(this, "GeradorChegadas", true).activate();
+        new GeradorChegadas(this, "Gerador de chegadas", true).activate();
         new Finalizador(this, "Finalizador", true).activate();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void init() {
-        distChegada = new ContDistExponential(this, "ChegadaPacientes", chegadaMedia, true, true);
-        distAtendimentoNaoUrgente = new ContDistNormal(this, "AtendimentoNaoUrgente", muNaoUrgente, sdNaoUrgente, true, true);
-        distAtendimentoUrgente    = new ContDistNormal(this, "AtendimentoUrgente",    muUrgente, sdUrgente, true, true);
+        distChegada = new ContDistExponential(this, "Chegada Pacientes", chegadaMedia, true, true);
+        distAtendimentoNaoUrgente = new ContDistNormal(this, "Atendimento nao urgente", muNaoUrgente, sdNaoUrgente, true, true);
+        distAtendimentoUrgente    = new ContDistNormal(this, "Atendimento urgente",    muUrgente, sdUrgente, true, true);
         u01 = new ContDistUniform(this, "U[0,1]", 0.0, 1.0, true, true);
 
         long base = seedBase;
@@ -88,6 +99,11 @@ public class ClinicaModel extends Model {
         u01.setSeed(base + 44);
 
 
+        // Fila de triagem
+        if (triagem) {
+            filaTriagem = new ProcessQueue<>(this, "FilaTriagem", true, true);
+        }
+        
         if (filaUnica) {
             filaUnicaQueue = new ProcessQueue<>(this, "FilaUnica", true, true);
         } else {
@@ -120,11 +136,6 @@ public class ClinicaModel extends Model {
             atendidosPorConsultorio[i] = new Count(this, "Atendidos_Consultorio-" + i, true, true);
             tempoServicoPorConsultorio[i] = new Tally(this, "TempoServico_Consultorio-" + i, true, true);
         }
-
-        pLqMaior5FilaUnica = new Tally(this, "P(Lq>5)-FilaUnica", true, true);
-        tempoAcima5FilaUnica = 0.0;
-        ultimoMarcadoFilaUnica = 0.0;
-        acima5FilaUnicaAtivo = false;
     }
 
     public void filaMudouUnica() {
