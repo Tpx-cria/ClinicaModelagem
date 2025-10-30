@@ -22,7 +22,6 @@ public class Triagem extends SimProcess {
             
             Paciente paciente = m.filaTriagem.first();
             m.filaTriagem.remove(paciente);
-            
             hold(new TimeSpan(4.0));
             
             // Reativa o paciente
