@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
+import java.security.SecureRandom;
 
 public class Main {
     private static String getArgConfigPath(String[] args) {
@@ -70,6 +71,12 @@ public class Main {
         int R = getInt(cfg, "sim.replicacoes", 30);
         double duracao = getDouble(cfg, "sim.duracaoMin", 600.0);
         long seedBase = getLong(cfg, "seed.base", 12345789L);
+        boolean randomizeSeed = getBool(cfg, "seed.randomize", false);
+        if (randomizeSeed) {
+            long s = new SecureRandom().nextLong();
+            System.out.println("Randomizando seed.base: " + s);
+            seedBase = s;
+        }
         boolean showReport = getBool(cfg, "relatorio.showReport", true);
         boolean showTrace = getBool(cfg, "relatorio.showTrace", true);
 
