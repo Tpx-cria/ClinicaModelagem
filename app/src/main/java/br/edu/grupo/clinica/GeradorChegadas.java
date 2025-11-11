@@ -17,8 +17,9 @@ public class GeradorChegadas extends SimProcess { // gerador de chegadas
             hold(new TimeSpan(inter));
 
             boolean urgente = (m.u01.sample() < m.probUrgentes);
-            Paciente p = new Paciente(m, urgente ? "PacienteUrgente" : "PacienteComum", true, urgente);
-            p.activate();
+            
+            PacienteEvento pacienteEvento = new PacienteEvento(m, urgente ? "PacienteUrgente" : "PacienteComum", true, urgente, "CHEGADA");
+            pacienteEvento.schedule(new TimeInstant(presentTime().getTimeAsDouble() + 0.01));
         }
     }
 }

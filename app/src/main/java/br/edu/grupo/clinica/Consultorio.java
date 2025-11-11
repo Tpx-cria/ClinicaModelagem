@@ -87,6 +87,11 @@ public class Consultorio extends SimProcess {
             if (prox.isUrgente()) m.pacientesAtendidosUrgente.update(); else m.pacientesAtendidosNaoUrgente.update();
             m.pacientesAtendidos.update();
             m.atendidosPorConsultorio[idx].update();
+            
+            EventoLog eventoFim = new EventoLog(m, "FimAtendimento", true, 
+                                String.format("Paciente %s finalizado (total: %.1fmin)", 
+                                prox.isUrgente() ? "URGENTE" : "comum", tempoSistema));
+            eventoFim.schedule(new TimeInstant(presentTime().getTimeAsDouble()));
             // loop continua buscando o próximo
         }
     }

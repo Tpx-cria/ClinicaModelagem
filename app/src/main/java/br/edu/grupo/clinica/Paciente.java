@@ -22,15 +22,23 @@ public class Paciente extends SimProcess {
         tChegada = presentTime();
         
         if (m.triagem) {
+            EventoLog eventoEntTriagem = new EventoLog(m, "EntradaTriagem", true, "Entrando na triagem");
+            eventoEntTriagem.schedule(new TimeInstant(presentTime().getTimeAsDouble()));
+            
             m.filaTriagem.insert(this);
             if (!m.enfermeiro.isScheduled()) {
                 m.enfermeiro.activate();
             }
             passivate();
+            
+            EventoLog eventoSaiTriagem = new EventoLog(m, "SaidaTriagem", true, "Saindo da triagem");
+            eventoSaiTriagem.schedule(new TimeInstant(presentTime().getTimeAsDouble()));
         }
 
         // Entra na fila adequada e registra início de espera
         inicioEspera = presentTime();
+        EventoLog eventoEntFila = new EventoLog(m, "EntradaFila", true, "Entrando na fila");
+        eventoEntFila.schedule(new TimeInstant(presentTime().getTimeAsDouble()));
         if (m.filaUnica) {
             m.filaUnicaQueue.insert(this);
             m.filaMudouUnica();
@@ -57,6 +65,9 @@ public class Paciente extends SimProcess {
 
         // Quando for reativado pelo consultório, mede a espera
         double espera = presentTime().getTimeAsDouble() - inicioEspera.getTimeAsDouble();
+        EventoLog eventoInicioAtend = new EventoLog(m, "InicioAtendimento", true, 
+                                     String.format("Iniciando atendimento (esperou %.1fmin)", espera));
+        eventoInicioAtend.schedule(new TimeInstant(presentTime().getTimeAsDouble()));
         m.tempoEspera.update(espera);
 
         // Paciente termina aqui. O tempo de serviço foi simulado no consultório.
