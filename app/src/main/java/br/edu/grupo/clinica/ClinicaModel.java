@@ -31,6 +31,13 @@ public class ClinicaModel extends Model {
     public boolean filaUnica = false;
     public boolean prioridadeUrgente = false;
     public boolean triagem = false;
+    
+    // Horários de pico
+    public boolean picoAtivo = false;
+    public double pico1Inicio = 180.0;
+    public double pico1Fim = 300.0;
+    public double pico2Inicio = 540.0;
+    public double pico2Fim = 660.0;
     public ProcessQueue<Paciente> filaUnicaQueue;
     public ProcessQueue<Paciente>[] filasPorConsultorio;
     public ProcessQueue<Paciente> filaTriagem;

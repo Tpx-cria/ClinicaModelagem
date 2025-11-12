@@ -100,6 +100,12 @@ public class Main {
             model.filaUnica = getBool(cfg, "cenario.filaUnica", false);
             model.prioridadeUrgente = getBool(cfg, "cenario.prioridadeUrgente", false);
             model.triagem = getBool(cfg, "cenario.triagem", false);
+            
+            model.picoAtivo = getBool(cfg, "pico.ativo", false);
+            model.pico1Inicio = getDouble(cfg, "pico1.inicio", 180.0);
+            model.pico1Fim = getDouble(cfg, "pico1.fim", 300.0);
+            model.pico2Inicio = getDouble(cfg, "pico2.inicio", 540.0);
+            model.pico2Fim = getDouble(cfg, "pico2.fim", 660.0);
 
             Experiment exp = new Experiment("Clinica_rep" + r);
             model.connectToExperiment(exp);
